@@ -29,7 +29,6 @@ global:
 log:
   level: DEBUG
 
-# Static certificates for your existing domains
 tls:
   stores:
     default:
@@ -49,7 +48,7 @@ tls:
 certificatesResolvers:
   cloudflare:
     acme:
-      email: "tonemail@gmail.com"
+      email: ""
       storage: /var/traefik/certs/cloudflare-acme.json
       caServer: "https://acme-v02.api.letsencrypt.org/directory"
       keyType: EC256
