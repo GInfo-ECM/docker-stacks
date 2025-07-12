@@ -13,6 +13,15 @@ entryPoints:
     address: ":443"
   minecraft:
     address: ":22565"
+  intraweb:
+    address: ":81"
+    http:
+      redirections:
+        entryPoint:
+          to: secureintraweb
+          scheme: https
+  secureintraweb:
+    address: ":444"
 
 providers:
   docker:
