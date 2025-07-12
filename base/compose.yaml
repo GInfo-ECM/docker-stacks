@@ -6,20 +6,19 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./portainer_data:/data
-      
+    networks:
+      - traefik-proxy
+
   traefik:
-    image: traefik:v2.10
-    container_name: traefik
-    restart: always
+    image: traefik:v3.4
     ports:
       - "80:80"
+      - "8080:8080"
+      - "25565:25565"
       - "443:443"
-    command:
-      - --api.insecure=true
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --entrypoints.web.address=:80
-      - --entrypoints.websecure.address=:443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik_data:/etc/traefik
+      - ./traefik.yml:/etc/traefik/traefik.yml
+      - ./data/certs:/var/traefik/certs/:rw
+    networks:
+      - traefik-proxy

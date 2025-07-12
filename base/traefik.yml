@@ -1,0 +1,60 @@
+api:
+  insecure: true  # Allows HTTP access to the API (use cautiously, better to secure it)
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: secureweb
+          scheme: https
+  secureweb:
+    address: ":443"
+  minecraft:
+    address: ":22565"
+
+providers:
+  docker:
+    exposedByDefault: false
+
+metrics:
+  prometheus:
+    buckets: [0.1, 0.3, 1.2, 5.0]
+
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+log:
+  level: DEBUG
+
+# Static certificates for your existing domains
+tls:
+  stores:
+    default:
+      defaultGeneratedCert: false  # Disable automatic self-signed certs
+  certificates:
+    - certFile: /var/traefik/certs/asso.centrale-marseille.fr.crt
+      keyFile: /var/traefik/certs/asso.centrale-marseille.fr.key
+      stores: [default]
+    - certFile: /var/traefik/certs/ginfo.ec-m.fr.crt
+      keyFile: /var/traefik/certs/ginfo.ec-m.fr.key
+      stores: [default]
+    - certFile: /var/traefik/certs/ginfo.centrale-marseille.fr.crt
+      keyFile: /var/traefik/certs/ginfo.centrale-marseille.fr.key
+      stores: [default]
+
+# ACME (Let's Encrypt) for Cloudflare-managed domains
+certificatesResolvers:
+  cloudflare:
+    acme:
+      email: "tonemail@gmail.com"
+      storage: /var/traefik/certs/cloudflare-acme.json
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      keyType: EC256
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"

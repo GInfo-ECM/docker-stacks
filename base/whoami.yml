@@ -1,0 +1,16 @@
+services:
+  whoami:
+    image: traefik/whoami
+    networks:
+      - frontend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.localhost`)"
+      - traefik.http.router.whomai.entrypoints=web
+      - traefik.http.routers.whoami-https.tls=true
+      - traefik.http.routers.whoami-https.tls.certresolver=cloudflare
+      - traefik.http.routers.whoami-https.entrypoints=secureweb
+      - traefik.http.routers.whoami-https.rule=Host(`whoami.localhost`)
+networks:
+  frontend:
+    external:true
