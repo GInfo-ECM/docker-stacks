@@ -6,7 +6,7 @@ Dépôt pour les stacks Docker du GInfo déployé sur Tyr/Bor
 Pour ramener un serveur à la vie, commencez par déployer le stack `base` :
 
 ```fish
-cd ~/Documents/dev/Docker/docker-stacks/base
+cd docker-stacks/base
 docker compose up -d
 ```
 
