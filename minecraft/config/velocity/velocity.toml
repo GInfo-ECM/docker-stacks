@@ -1,0 +1,75 @@
+# This is the main configuration file for the Velocity proxy.
+# It is designed to be used with the itzg/mc-proxy Docker image.
+# Placeholders like ${VELOCITY_MOTD} will be replaced by environment variables at runtime.
+
+# Config version. Do not change this.
+config-version = "2.7"
+
+# The address and port Velocity will listen on *inside* the container.
+# Traefik will forward traffic from the public port (25565) to this one.
+bind = "0.0.0.0:25577"
+
+# The Message of the Day shown in the server list.
+# This value is injected from the .env file.
+motd = "${VELOCITY_MOTD}"
+
+# What to display for the max player count. Velocity itself doesn't enforce a player cap.
+show-max-players = 500
+
+# Should we authenticate players with Mojang? This must be true for a secure public server.
+online-mode = true
+
+# Enforce the new public key security standard.
+force-key-authentication = true
+
+# A basic security measure to disallow some VPNs and proxies from connecting.
+prevent-client-proxy-connections = true
+
+# --- Player Data Forwarding (CRITICAL) ---
+# This setting ensures player skins, UUIDs, and real IP addresses are sent to backend servers.
+# "modern" is the correct setting for Minecraft 1.13+ servers like Paper.
+player-info-forwarding-mode = "modern"
+
+# The path to the secret key file *inside the container*. This file is used to authenticate
+# the connection between the proxy and the backend servers.
+forwarding-secret-file = "/server/forwarding.secret"
+
+[servers]
+# This section defines your backend Minecraft servers.
+# The names ('survival', 'creative') MUST match the service names in your docker-compose.yml.
+# The port (25565) is the one the Minecraft servers listen on inside the Docker network.
+survival = "survival:25565"
+creative = "creative:25565"
+
+# In what order to try connecting players to servers when they first log in.
+# The first server in this list is the default lobby/hub.
+try = [
+	"survival"
+]
+
+[forced-hosts]
+# This allows you to route players to specific servers based on the address they use to connect.
+# For example, if you set up DNS for "creative.yourdomain.com" to point to your server IP,
+# uncommenting the line below would send them directly to the creative server.
+# "creative.yourdomain.com" = [ "creative" ]
+
+[advanced]
+# How large a Minecraft packet has to be before we compress it.
+compression-threshold = 256
+# Default compression level. -1 uses the Java default.
+compression-level = -1
+# How fast (in milliseconds) clients can reconnect.
+login-ratelimit = 3000
+# Timeout for initial connections.
+connection-timeout = 5000
+# Timeout for established connections.
+read-timeout = 30000
+# Allows Velocity to understand plugin messages from BungeeCord plugins.
+bungee-plugin-message-channel = true
+
+[query]
+# Enable the legacy server query protocol.
+enabled = false
+# Port for the query protocol to listen on if enabled.
+port = 25577
+map = "Velocity"

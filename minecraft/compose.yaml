@@ -1,0 +1,80 @@
+version: "3.8"
+
+services:
+  velocity:
+    image: itzg/mc-proxy
+    container_name: velocity-proxy
+    restart: always
+    # REMOVED the 'ports' section here. Traefik now handles port exposure.
+    environment:
+      - TYPE=VELOCITY
+      - MEMORY=${VELOCITY_MEMORY}
+      - REPLACE_ENV_VARIABLES=true
+      - VELOCITY_MOTD=${VELOCITY_MOTD}
+      - FORWARDING_SECRET=${FORWARDING_SECRET}
+    volumes:
+      - ./config/velocity:/config:ro
+      - ${VELOCITY_DATA_DIR}:/server
+    labels:
+      # --- Traefik TCP Labels ---
+      - "traefik.enable=true"
+      # Define the TCP Router
+      - "traefik.tcp.routers.minecraft.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.minecraft.entrypoints=minecraft"
+      - "traefik.tcp.routers.minecraft.service=minecraft-svc"
+      # Define the TCP Service
+      - "traefik.tcp.services.minecraft-svc.loadbalancer.server.port=25577"
+    networks:
+      # Connect to the internal Minecraft network
+      - minecraft-net
+      # Connect to the external Traefik network
+      - traefik-proxy
+    depends_on:
+      - survival
+      - creative
+
+  survival:
+    image: itzg/minecraft-server
+    container_name: mc-survival
+    restart: always
+    environment:
+      - EULA=TRUE
+      - VERSION=${MC_VERSION}
+      - TYPE=PAPER
+      - MEMORY=${SURVIVAL_MEMORY}
+      - ONLINE_MODE=FALSE
+      - REPLACE_ENV_VARIABLES=true
+      - FORWARDING_SECRET=${FORWARDING_SECRET}
+    volumes:
+      - ${SURVIVAL_DATA_DIR}:/data
+      - ./config/paper/paper-global.yml:/config-templates/paper-global.yml:ro
+    networks:
+      - minecraft-net
+
+  creative:
+    image: itzg/minecraft-server
+    container_name: mc-creative
+    restart: always
+    environment:
+      - EULA=TRUE
+      - VERSION=${MC_VERSION}
+      - TYPE=PAPER
+      - MEMORY=${CREATIVE_MEMORY}
+      - ONLINE_MODE=FALSE
+      - REPLACE_ENV_VARIABLES=true
+      - FORWARDING_SECRET=${FORWARDING_SECRET}
+    volumes:
+      - ${CREATIVE_DATA_DIR}:/data
+      - ./config/paper/paper-global.yml:/config-templates/paper-global.yml:ro
+    networks:
+      - minecraft-net
+
+# Define the networks used by the services.
+networks:
+  # Internal network for game servers.
+  minecraft-net:
+    driver: bridge
+  # External network to connect to Traefik.
+  # Ensure 'traefik-proxy' matches the name of your Traefik network.
+  traefik-proxy:
+    external: true
