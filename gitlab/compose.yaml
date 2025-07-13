@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   gitlab:
     image: 'gitlab/gitlab-ee:latest'
@@ -39,35 +37,51 @@ services:
 
     labels:
       # --- Traefik Labels ---
-      # YOU MAY NEED TO EDIT THE VALUES BELOW
       - "traefik.enable=true"
-      # Set the Docker network Traefik should use
-      - "traefik.docker.network=proxy"
+      - "traefik.docker.network=traefik-proxy" # Specify the Traefik network
 
       # HTTPS Router
       - "traefik.http.routers.gitlab.rule=Host(`${GITLAB_HOSTNAME}`)"
-      - "traefik.http.routers.gitlab.entrypoints=websecure" # Your HTTPS entrypoint
+      - "traefik.http.routers.gitlab.entrypoints=websecure"
       - "traefik.http.routers.gitlab.service=gitlab"
       - "traefik.http.routers.gitlab.tls=true"
-      - "traefik.http.routers.gitlab.tls.certresolver=myresolver" # Your certificate resolver
+      - "traefik.http.routers.gitlab.tls.certresolver=myresolver"
 
       # HTTP to HTTPS Redirect Middleware
       - "traefik.http.routers.gitlab-http.rule=Host(`${GITLAB_HOSTNAME}`)"
-      - "traefik.http.routers.gitlab-http.entrypoints=web" # Your HTTP entrypoint
+      - "traefik.http.routers.gitlab-http.entrypoints=web"
       - "traefik.http.routers.gitlab-http.middlewares=https-redirect@docker"
 
       # Service definition for Traefik
       - "traefik.http.services.gitlab.loadbalancer.server.port=80"
 
     networks:
-      # Connect to the external Traefik network.
-      # EDIT 'proxy' if your network has a different name.
+      # Connect to the external Traefik network and our new internal network.
       - traefik-proxy
+      - gitlab-net
 
     shm_size: '256m'
 
+  # --- New GitLab Runner Service ---
+  gitlab-runner:
+    image: 'gitlab/gitlab-runner:latest'
+    container_name: gitlab-runner
+    restart: always
+    depends_on:
+      - gitlab # Ensures GitLab starts first
+    volumes:
+      # Volume to persist runner registration & configuration
+      - '${GITLAB_RUNNER_CONFIG_DIR}:/etc/gitlab-runner'
+      # Mount the Docker socket to allow the runner to start sibling containers for jobs
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    networks:
+      # Connect to the internal network to communicate with the gitlab service
+      - gitlab-net
+
 networks:
-  # Define the external network so this compose file can connect to it.
-  # EDIT 'proxy' if your network has a different name.
+  # Define the external Traefik network
   traefik-proxy:
     external: true
+  # Define the new internal network for GitLab and Runner communication
+  gitlab-net:
+    driver: bridge
