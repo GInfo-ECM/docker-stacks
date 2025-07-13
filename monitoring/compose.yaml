@@ -1,0 +1,49 @@
+services:
+  # La stack LGTM (Loki, Grafana, Tempo, Prometheus, Pyroscope)
+  lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: otel-lgtm-stack
+    restart: unless-stopped
+    volumes:
+      # Créez un répertoire 'container_data' pour rendre les données persistantes
+      - ./container_data/grafana:/data/grafana
+      - ./container_data/prometheus:/data/prometheus
+      - ./container_data/loki:/data/loki
+      - ./container_data/tempo:/data/tempo
+      - ./container_data/pyroscope:/data/pyroscope
+    env_file:
+      - .env
+    networks:
+      # Connexion au réseau partagé avec Traefik
+      - traefik-frontend
+    labels:
+      # Active Traefik pour ce conteneur
+      - "traefik.enable=true"
+      # Les règles ci-dessous indiquent à Traefik comment router le trafic
+      # vers les différents ports internes du conteneur LGTM.
+
+      # --- Routeur pour le tableau de bord Grafana (HTTP) ---
+      # Accessible via http://grafana.lgtm.localhost
+      - "traefik.http.routers.lgtm-grafana.rule=Host(`grafana.lgtm.localhost`)"
+      - "traefik.http.routers.lgtm-grafana.entrypoints=web" # Assurez-vous que votre Traefik a un entrypoint nommé "web" sur le port 80
+      - "traefik.http.services.lgtm-grafana.loadbalancer.server.port=3000"
+
+      # --- Routeur pour le collecteur OTLP (HTTP) ---
+      # Accessible via http://otlp.lgtm.localhost
+      - "traefik.http.routers.lgtm-otlp-http.rule=Host(`otlp.lgtm.localhost`)"
+      - "traefik.http.routers.lgtm-otlp-http.entrypoints=web"
+      - "traefik.http.services.lgtm-otlp-http.loadbalancer.server.port=4318"
+
+      # --- Routeur pour le collecteur OTLP (gRPC via TCP) ---
+      # Accessible sur le port 4317
+      - "traefik.tcp.routers.lgtm-otlp-grpc.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.lgtm-otlp-grpc.entrypoints=otlp-grpc" # Assurez-vous que votre Traefik a un entrypoint nommé "otlp-grpc" sur le port 4317
+      - "traefik.tcp.services.lgtm-otlp-grpc.loadbalancer.server.port=4317"
+networks:
+  # Spécifie le réseau utilisé par votre instance Traefik.
+  # "external: true" indique à Docker de ne pas créer ce réseau,
+  # mais de s'y connecter car il est géré ailleurs.
+  traefik-frontend:
+    external: true
+
+
