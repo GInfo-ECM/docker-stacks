@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  gitlab:
+    image: 'gitlab/gitlab-ee:latest'
+    container_name: gitlab
+    restart: always
+    hostname: '${GITLAB_HOSTNAME}'
+
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        # Tell GitLab its external URL. IMPORTANT: Use https://
+        external_url 'https://${GITLAB_HOSTNAME}'
+
+        # Disable GitLab's internal Nginx from handling HTTPS, as Traefik will do it.
+        nginx['enable'] = true
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+
+        # Set headers to let GitLab know it's behind a proxy.
+        nginx['proxy_set_headers'] = {
+          'X-Forwarded-Proto' => 'https',
+          'X-Forwarded-Ssl' => 'on'
+        }
+
+        # Configure the SSH port GitLab listens on.
+        gitlab_shell['ssh_port'] = ${GITLAB_SSH_PORT}
+        gitlab_rails['time_zone'] = '${GITLAB_TIMEZONE}'
+
+    ports:
+      # Expose only the SSH port directly. Traefik handles HTTP/S.
+      - '${GITLAB_SSH_PORT}:22'
+
+    volumes:
+      # Use bind mounts to store data in local folders for easy backup.
+      - '${GITLAB_CONFIG_DIR}:/etc/gitlab'
+      - '${GITLAB_LOGS_DIR}:/var/log/gitlab'
+      - '${GITLAB_DATA_DIR}:/var/opt/gitlab'
+
+    labels:
+      # --- Traefik Labels ---
+      # YOU MAY NEED TO EDIT THE VALUES BELOW
+      - "traefik.enable=true"
+      # Set the Docker network Traefik should use
+      - "traefik.docker.network=proxy"
+
+      # HTTPS Router
+      - "traefik.http.routers.gitlab.rule=Host(`${GITLAB_HOSTNAME}`)"
+      - "traefik.http.routers.gitlab.entrypoints=websecure" # Your HTTPS entrypoint
+      - "traefik.http.routers.gitlab.service=gitlab"
+      - "traefik.http.routers.gitlab.tls=true"
+      - "traefik.http.routers.gitlab.tls.certresolver=myresolver" # Your certificate resolver
+
+      # HTTP to HTTPS Redirect Middleware
+      - "traefik.http.routers.gitlab-http.rule=Host(`${GITLAB_HOSTNAME}`)"
+      - "traefik.http.routers.gitlab-http.entrypoints=web" # Your HTTP entrypoint
+      - "traefik.http.routers.gitlab-http.middlewares=https-redirect@docker"
+
+      # Service definition for Traefik
+      - "traefik.http.services.gitlab.loadbalancer.server.port=80"
+
+    networks:
+      # Connect to the external Traefik network.
+      # EDIT 'proxy' if your network has a different name.
+      - traefik-proxy
+
+    shm_size: '256m'
+
+networks:
+  # Define the external network so this compose file can connect to it.
+  # EDIT 'proxy' if your network has a different name.
+  traefik-proxy:
+    external: true
