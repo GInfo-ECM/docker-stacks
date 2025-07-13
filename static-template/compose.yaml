@@ -1,0 +1,42 @@
+services:
+  # The Nginx web server for the static site
+  nginx:
+    image: nginx:1.23-alpine
+    container_name: my-static-site
+    volumes:
+      # Mount the git repository into the Nginx container
+      - ./site-data:/usr/share/nginx/html:ro # :ro makes it read-only for security
+    networks:
+      - traefik_proxy
+    labels:
+      # --- Traefik Labels ---
+      - "traefik.enable=true"
+      - "traefik.http.routers.my-site.rule=Host(`your-domain.com`)"
+      - "traefik.http.routers.my-site.entrypoints=websecure"
+      - "traefik.http.routers.my-site.tls.certresolver=myresolver" # Use your Traefik cert resolver name
+      - "traefik.http.services.my-site.loadbalancer.server.port=80"
+
+  # The webhook listener that triggers the update script
+  webhook:
+    image: adnanh/webhook
+    container_name: my-static-site-webhook
+    volumes:
+      # Mount the config, script, and the git repo directory
+      - ./hooks.json:/etc/webhook/hooks.json
+      - ./scripts:/scripts
+      - ./site-data:/site-data # Needs access to run git commands
+    networks:
+      - traefik_proxy
+    command: -hooks /etc/webhook/hooks.json -verbose
+    labels:
+      # --- Traefik Labels ---
+      # This service gets its own subdomain to receive webhooks
+      - "traefik.enable=true"
+      - "traefik.http.routers.my-site-webhook.rule=Host(`webhook.your-domain.com`)"
+      - "traefik.http.routers.my-site-webhook.entrypoints=websecure"
+      - "traefik.http.routers.my-site-webhook.tls.certresolver=myresolver" # Use your Traefik cert resolver name
+      - "traefik.http.services.my-site-webhook.loadbalancer.server.port=9000"
+
+networks:
+  traefik-proxy:
+    external: true

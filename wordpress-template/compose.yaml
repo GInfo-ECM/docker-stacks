@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # MariaDB Database Service
+  db:
+    image: mariadb:lts
+    container_name: wordpress_db
+    command: '--default-authentication-plugin=mysql_native_password'
+    volumes:
+      # --- CHANGE ---
+      # Switched from a named volume to a local bind mount.
+      # The "./db_data" folder will be created on your host machine.
+      - ./db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # WordPress Application Service
+  wordpress:
+    image: wordpress:6.4-apache  # I've reverted to the more stable 6.4 for this example, but you can use the version you prefer.
+    container_name: wordpress_app
+    depends_on:
+      - db
+    volumes:
+      # --- CHANGE ---
+      # Switched from a named volume to a local bind mount.
+      # The "./wp_data" folder will contain all your WP files.
+      - ./wp_data:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${DB_NAME}
+    networks:
+      - internal
+      - traefik_proxy
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wordpress.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.routers.wordpress.entrypoints=websecure"
+      - "traefik.http.routers.wordpress.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.middlewares.wp-canonical-host.redirectregex.regex=^https://www\\.${DOMAIN_NAME}(.*)"
+      - "traefik.http.middlewares.wp-canonical-host.redirectregex.replacement=https://`${DOMAIN_NAME}`$${1}"
+      - "traefik.http.routers.wordpress.middlewares=wp-canonical-host"
+      - "traefik.http.services.wordpress.loadbalancer.server.port=80"
+
+# Docker Networks
+networks:
+  traefik_proxy:
+    external: true
+  internal:
+    internal: true
+
