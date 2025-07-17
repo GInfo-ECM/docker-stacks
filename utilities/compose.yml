@@ -1,0 +1,96 @@
+services:
+  # --- PrivateBin: Secure, encrypted pastebin ---
+  privatebin:
+    image: privatebin/nginx-fpm-alpine:1.5
+    container_name: privatebin
+    restart: unless-stopped
+    volumes:
+      # Persists all created pastes
+      - ${PRIVATEBIN_DATA_PATH}:/srv/data
+    networks:
+      # Must be on the same network as Traefik
+      - ${TRAEFIK_NETWORK}
+    labels:
+      - "traefik.enable=true"
+      # HTTP Router (for redirection)
+      - "traefik.http.routers.privatebin-http.rule=Host(`${PRIVATEBIN_HOSTNAME}`)"
+      - "traefik.http.routers.privatebin-http.entrypoints=web"
+      - "traefik.http.routers.privatebin-http.middlewares=redirect-to-https@docker"
+      # HTTPS Router (main)
+      - "traefik.http.routers.privatebin-secure.rule=Host(`${PRIVATEBIN_HOSTNAME}`)"
+      - "traefik.http.routers.privatebin-secure.entrypoints=websecure"
+      - "traefik.http.routers.privatebin-secure.tls=true"
+      - "traefik.http.routers.privatebin-secure.tls.certresolver=${TRAEFIK_CERT_RESOLVER}"
+      - "traefik.http.routers.privatebin-secure.service=privatebin-svc"
+      # Service Definition
+      - "traefik.http.services.privatebin-svc.loadbalancer.server.port=8080" # PrivateBin listens on 8080 internally
+
+  # --- Shlink: Modern URL shortener application ---
+  shlink:
+    image: shlinkio/shlink:3.6
+    container_name: shlink
+    restart: unless-stopped
+    depends_on:
+      - shlink-db
+      - shlink-redis
+    environment:
+      # Database Connection
+      - DB_DRIVER=postgres
+      - DB_HOST=shlink-db
+      - DB_PORT=5432
+      - DB_NAME=${SHLINK_DB_NAME}
+      - DB_USER=${SHLINK_DB_USER}
+      - DB_PASSWORD=${SHLINK_DB_PASSWORD}
+      # Redis Connection
+      - REDIS_SERVERS=tcp://shlink-redis:6379
+      # Shlink Configuration
+      - DEFAULT_DOMAIN=${SHLINK_HOSTNAME}
+      - IS_HTTPS_ENABLED=true
+      - GEOLITE_LICENSE_KEY=${SHLINK_GEOLITE_LICENSE_KEY} # Optional, for location stats. Get one free from MaxMind.
+    networks:
+      - ${TRAEFIK_NETWORK}
+      - shlink-internal
+    labels:
+      - "traefik.enable=true"
+      # HTTP Router (for redirection)
+      - "traefik.http.routers.shlink-http.rule=Host(`${SHLINK_HOSTNAME}`)"
+      - "traefik.http.routers.shlink-http.entrypoints=web"
+      - "traefik.http.routers.shlink-http.middlewares=redirect-to-https@docker"
+      # HTTPS Router (main)
+      - "traefik.http.routers.shlink-secure.rule=Host(`${SHLINK_HOSTNAME}`)"
+      - "traefik.http.routers.shlink-secure.entrypoints=websecure"
+      - "traefik.http.routers.shlink-secure.tls=true"
+      - "traefik.http.routers.shlink-secure.tls.certresolver=${TRAEFIK_CERT_RESOLVER}"
+      - "traefik.http.routers.shlink-secure.service=shlink-svc"
+      # Service Definition
+      - "traefik.http.services.shlink-svc.loadbalancer.server.port=8080" # Shlink also listens on 8080
+
+  # --- Shlink's Database (PostgreSQL) ---
+  shlink-db:
+    image: postgres:17-alpine
+    container_name: shlink-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${SHLINK_DB_NAME}
+      - POSTGRES_USER=${SHLINK_DB_USER}
+      - POSTGRES_PASSWORD=${SHLINK_DB_PASSWORD}
+    volumes:
+      # Persists the database data
+      - ${SHLINK_DB_DATA_PATH}:/var/lib/postgresql/data
+    networks:
+      # ONLY on the internal network. Not exposed to the outside world.
+      - shlink-internal
+
+  # --- Shlink's Cache (Redis) ---
+  shlink-redis:
+    image: redis:7-alpine
+    container_name: shlink-redis
+    restart: unless-stopped
+    networks:
+      # ONLY on the internal network.
+      - shlink-internal
+networks:
+  ${TRAEFIK_NETWORK}:
+    external: true
+  shlink-internal: # A private network for Shlink and its database/cache
+    driver: bridge
