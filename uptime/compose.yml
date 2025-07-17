@@ -1,0 +1,42 @@
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1 # Using version 1 for stability, not 'latest'
+    container_name: uptime-kuma
+    restart: unless-stopped
+    
+    volumes:
+      # Mount a volume on the host to persist Uptime Kuma's data
+      - ${UPTIME_KUMA_DATA_PATH}:/app/data
+      
+    networks:
+      # Connect to the same network your Traefik container is on
+      - ${TRAEFIK_NETWORK}
+      
+    labels:
+      # --- Traefik Labels ---
+      - "traefik.enable=true"
+
+      # --- HTTP Router (for redirection to HTTPS) ---
+      - "traefik.http.routers.uptime-kuma-http.rule=Host(`${UPTIME_KUMA_HOSTNAME}`)"
+      - "traefik.http.routers.uptime-kuma-http.entrypoints=web" # Assumes 'web' is your HTTP entrypoint (port 80)
+      - "traefik.http.routers.uptime-kuma-http.middlewares=redirect-to-https@docker"
+
+      # --- HTTPS Router (main) ---
+      - "traefik.http.routers.uptime-kuma-secure.rule=Host(`${UPTIME_KUMA_HOSTNAME}`)"
+      - "traefik.http.routers.uptime-kuma-secure.entrypoints=websecure" # Assumes 'websecure' is your HTTPS entrypoint (port 443)
+      - "traefik.http.routers.uptime-kuma-secure.tls=true"
+      - "traefik.http.routers.uptime-kuma-secure.tls.certresolver=${TRAEFIK_CERT_RESOLVER}"
+      - "traefik.http.routers.uptime-kuma-secure.service=uptime-kuma-svc"
+
+      # --- Service Definition ---
+      - "traefik.http.services.uptime-kuma-svc.loadbalancer.server.port=3001"
+      
+      # --- Middleware (for HTTP to HTTPS redirection) ---
+      # This middleware is defined here and used by the HTTP router above.
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+
+networks:
+  # Define the external Traefik network
+  ${TRAEFIK_NETWORK}:
+    external: true
