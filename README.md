@@ -29,7 +29,7 @@ docker compose up -d
 
 | Stack | Description | Status | Ports |
 |-------|-------------|--------|-------|
-| **base** | Portainer + Traefik (requis) | ✅ Stable | 80, 443, 8080, 9000 |
+| **base** | Portainer + Traefik (requis) | ✅ Stable | 80, 443, 25565 |
 
 ### 🛠️ Développement et DevOps
 
