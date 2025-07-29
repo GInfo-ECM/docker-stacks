@@ -35,28 +35,28 @@ docker compose up -d
 
 | Stack | Description | Status | Prérequis |
 |-------|-------------|--------|-----------|
-| **gitlab** | GitLab CE avec GitLab Runner | ✅ Stable | `base` |
-| **monitoring** | Stack LGTM (Loki, Grafana, Tempo, Prometheus, Pyroscope) | ✅ Stable | `base` |
+| **gitlab** | GitLab CE avec GitLab Runner | ✅ Stable |
+| **monitoring** | Stack LGTM (Loki, Grafana, Tempo, Prometheus, Pyroscope) | ✅ Stable |
 
 ### 🎮 Applications
 
 | Stack | Description | Status | Prérequis |
 |-------|-------------|--------|-----------|
-| **minecraft** | Serveur Minecraft avec proxy Velocity | ✅ Stable | `base` |
-| **zitadel** | Gestion d'identité et d'accès (IAM) | ✅ Stable | `base` |
+| **minecraft** | Serveur Minecraft avec proxy Velocity | ✅ Stable |
+| **zitadel** | Gestion d'identité et d'accès (IAM) | ✅ Stable |
 
 ### 📝 Templates et modèles
 
 | Stack | Description | Status | Prérequis |
 |-------|-------------|--------|-----------|
-| **static-template** | Template pour sites statiques avec webhook Git | 📋 Template | `base` |
-| **wordpress-template** | Template WordPress avec MySQL | 📋 Template | `base` |
+| **static-template** | Template pour sites statiques avec webhook Git | 📋 Template |
+| **wordpress-template** | Template WordPress avec MySQL | 📋 Template |
 
 ### 🔄 Utilitaires
 
 | Stack | Description | Status | Prérequis |
 |-------|-------------|--------|-----------|
-| **backup** | Solutions de sauvegarde | 🚧 En développement | `base` |
+| **backup** | Solutions de sauvegarde | 🚧 En développement |
 
 ### 🏗️ Stacks en développement
 
