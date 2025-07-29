@@ -33,22 +33,22 @@ docker compose up -d
 
 ### 🛠️ Développement et DevOps
 
-| Stack | Description | Status | Prérequis |
-|-------|-------------|--------|-----------|
+| Stack | Description | Status |
+|-------|-------------|--------|
 | **gitlab** | GitLab CE avec GitLab Runner | ✅ Stable |
 | **monitoring** | Stack LGTM (Loki, Grafana, Tempo, Prometheus, Pyroscope) | ✅ Stable |
 
 ### 🎮 Applications
 
-| Stack | Description | Status | Prérequis |
-|-------|-------------|--------|-----------|
+| Stack | Description | Status |
+|-------|-------------|--------|
 | **minecraft** | Serveur Minecraft avec proxy Velocity | ✅ Stable |
 | **zitadel** | Gestion d'identité et d'accès (IAM) | ✅ Stable |
 
 ### 📝 Templates et modèles
 
-| Stack | Description | Status | Prérequis |
-|-------|-------------|--------|-----------|
+| Stack | Description | Status |
+|-------|-------------|--------|
 | **static-template** | Template pour sites statiques avec webhook Git | 📋 Template |
 | **wordpress-template** | Template WordPress avec MySQL | 📋 Template |
 
