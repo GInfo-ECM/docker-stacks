@@ -1,0 +1,126 @@
+# Configuration du GitLab Runner
+# Ce fichier doit être copié vers 'runner-config/config.toml' après avoir configuré les valeurs
+
+# Durée limite avant timeout pour les jobs (en secondes)
+# Par défaut: 3600 secondes (1 heure)
+concurrent = 1
+
+# Niveau de logs du runner
+# Valeurs possibles: debug, info, warn, error, fatal, panic
+log_level = "info"
+
+# Format des logs
+# Valeurs possibles: runner, text, json
+log_format = "runner"
+
+# Vérifie les nouvelles versions du runner toutes les X secondes
+# Mettre à 0 pour désactiver
+check_interval = 0
+
+# Session serveur pour les jobs interactifs
+[session_server]
+  session_timeout = 1800
+
+# Configuration des runners
+# Un runner par bloc [[runners]]
+[[runners]]
+  # Nom du runner (affiché dans GitLab)
+  name = "docker-runner"
+  
+  # URL de votre instance GitLab
+  # REMPLACER par l'URL de votre GitLab
+  url = "https://VOTRE_GITLAB_HOSTNAME"
+  
+  # Token d'enregistrement du runner
+  # OBTENIR depuis GitLab > Admin Area > CI/CD > Runners > Register an instance runner
+  # ou depuis votre projet > Settings > CI/CD > Runners > Project runners
+  token = "VOTRE_RUNNER_TOKEN"
+  
+  # Exécuteur à utiliser pour les jobs
+  # docker = utilise des conteneurs Docker (recommandé)
+  # shell = exécute directement sur la machine hôte
+  # docker-windows = pour Windows avec Docker
+  executor = "docker"
+  
+  # Configuration spécifique à l'exécuteur Docker
+  [runners.docker]
+    # Image Docker par défaut si non spécifiée dans .gitlab-ci.yml
+    image = "alpine:latest"
+    
+    # Mode privilégié pour le conteneur (requis pour Docker-in-Docker)
+    # Attention: peut présenter des risques de sécurité
+    privileged = false
+    
+    # Désactiver l'entrypoint de l'image
+    disable_entrypoint_overwrite = false
+    
+    # OOM (Out Of Memory) killer score
+    # Plus bas = moins susceptible d'être tué par l'OOM killer
+    oom_score_adjust = 0
+    
+    # Désactiver le cache des images
+    disable_cache = false
+    
+    # Volumes à monter dans tous les jobs
+    # Format: "host-path:container-path:mode"
+    # Exemple: volumes = ["/cache:/cache:rw", "/var/run/docker.sock:/var/run/docker.sock:rw"]
+    volumes = ["/cache", "/var/run/docker.sock:/var/run/docker.sock"]
+    
+    # Limite de mémoire pour les conteneurs (format: 512m, 2g)
+    memory = "1g"
+    
+    # Limite de swap pour les conteneurs
+    memory_swap = "2g"
+    
+    # Limite CPU (nombre de CPUs: 0.5, 1, 2)
+    cpus = "1"
+    
+    # Réseau Docker à utiliser
+    # "bridge" = réseau bridge par défaut
+    # "host" = utilise le réseau de l'hôte
+    # "custom_network" = utilise un réseau personnalisé
+    network_mode = "bridge"
+    
+    # Images Docker autorisées (liste blanche)
+    # Laissez vide pour autoriser toutes les images
+    # allowed_images = ["alpine:*", "ubuntu:*", "node:*"]
+    
+    # Services supplémentaires à démarrer pour chaque job
+    # Exemple: base de données, cache, etc.
+    # services = ["postgres:13", "redis:alpine"]
+    
+    # Variables d'environnement à définir dans tous les jobs
+    # [runners.docker.environment]
+    #   VAR1 = "valeur1"
+    #   VAR2 = "valeur2"
+    
+    # Configuration pour le cache
+    [runners.cache]
+      # Type de cache: s3, gcs, azure, local
+      Type = "local"
+      
+      # Chemin local pour le cache (quand Type = "local")
+      Path = "/cache"
+      
+      # Partage du cache entre jobs
+      Shared = true
+
+  # Configuration des fonctionnalités du runner
+  [runners.feature_flags]
+    # Utilise l'ancien système de tokens
+    FF_USE_LEGACY_KUBERNETES_EXECUTION_STRATEGY = false
+
+# Configuration avancée (optionnelle)
+
+# Métriques Prometheus (optionnel)
+# listen_address = ":9252"
+
+# Configuration Sentry pour le monitoring d'erreurs (optionnel)
+# [sentry]
+#   dsn = "https://your-sentry-dsn"
+
+# Configuration pour Docker Machine (optionnel, pour auto-scaling)
+# [runners.machine]
+#   IdleCount = 0
+#   IdleTime = 1800
+#   MaxBuilds = 10
