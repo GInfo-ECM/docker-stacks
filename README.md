@@ -35,7 +35,7 @@ docker compose up -d
 
 | Stack | Description | Status | Prérequis |
 |-------|-------------|--------|-----------|
-| **gitlab** | GitLab CE/EE avec GitLab Runner | ✅ Stable | `base` |
+| **gitlab** | GitLab CE avec GitLab Runner | ✅ Stable | `base` |
 | **monitoring** | Stack LGTM (Loki, Grafana, Tempo, Prometheus, Pyroscope) | ✅ Stable | `base` |
 
 ### 🎮 Applications
@@ -62,9 +62,9 @@ docker compose up -d
 
 | Stack | Description | Status |
 |-------|-------------|--------|
-| **cocoweb** | Application web personnalisée | 🚧 Template vide |
-| **forrest** | Service personnalisé | 🚧 Template vide |
-| **myca** | Autorité de certification | 🚧 Template vide |
+| **cocoweb** | Bar'bu | 🚧 Template vide |
+| **forrest** | Successeur des Drupannales | 🚧 Template vide |
+| **myca** | Association applicative | 🚧 Template vide |
 
 ## 🤝 Contribution
 
@@ -109,6 +109,7 @@ docker compose up -d
 - ✅ Utiliser les réseaux Docker appropriés
 - ✅ Inclure les labels Traefik nécessaires
 - ✅ Fournir un fichier `.env.template` documenté
+- ✅ Mettre les données dans un dossier adjacent
 - ✅ Tester le déploiement et la connectivité
 - ✅ Documenter les prérequis et la configuration
 
