@@ -1,0 +1,8 @@
+# GitLab data directories (contiennent des données sensibles)
+config/
+data/
+logs/
+runner-config/
+
+# Variables d'environnement locales
+.env
