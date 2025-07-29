@@ -54,8 +54,8 @@ docker compose up -d
 
 ### 🔄 Utilitaires
 
-| Stack | Description | Status | Prérequis |
-|-------|-------------|--------|-----------|
+| Stack | Description | Status |
+|-------|-------------|--------|
 | **backup** | Solutions de sauvegarde | 🚧 En développement |
 
 ### 🏗️ Stacks en développement
