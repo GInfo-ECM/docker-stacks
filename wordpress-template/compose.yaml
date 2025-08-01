@@ -38,7 +38,7 @@ services:
       WORDPRESS_DB_NAME: ${DB_NAME}
     networks:
       - internal
-      - traefik_proxy
+      - traefik-proxy
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
@@ -52,7 +52,7 @@ services:
 
 # Docker Networks
 networks:
-  traefik_proxy:
+  traefik-proxy:
     external: true
   internal:
     internal: true

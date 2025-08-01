@@ -95,7 +95,7 @@ docker compose up -d
          - "traefik.enable=true"
          - "traefik.http.routers.mon-service.rule=Host(`mon-service.example.com`)"
          - "traefik.http.routers.mon-service.entrypoints=websecure"
-         - "traefik.http.routers.mon-service.tls.certresolver=myresolver"
+         - "traefik.http.routers.mon-service.tls.certresolver=cloudflare"
    
    networks:
      traefik-proxy:

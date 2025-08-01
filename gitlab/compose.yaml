@@ -45,7 +45,7 @@ services:
       - "traefik.http.routers.gitlab.entrypoints=websecure"
       - "traefik.http.routers.gitlab.service=gitlab"
       - "traefik.http.routers.gitlab.tls=true"
-      - "traefik.http.routers.gitlab.tls.certresolver=myresolver"
+      - "traefik.http.routers.gitlab.tls.certresolver=cloudflare"
 
       # HTTP to HTTPS Redirect Middleware
       - "traefik.http.routers.gitlab-http.rule=Host(`${GITLAB_HOSTNAME}`)"

@@ -1,5 +1,5 @@
 api:
-  insecure: true  # Allows HTTP access to the API (use cautiously, better to secure it)
+  insecure: false  # Allows HTTP access to the API (use cautiously, better to secure it)
 
 entryPoints:
   web:
@@ -12,7 +12,7 @@ entryPoints:
   secureweb:
     address: ":443"
   minecraft:
-    address: ":22565"
+    address: ":25565"
   intraweb:
     address: ":81"
     http:

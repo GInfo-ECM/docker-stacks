@@ -2,7 +2,7 @@ services:
   whoami:
     image: traefik/whoami
     networks:
-      - frontend
+      - traefik-proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.whoami.rule=Host(`whoami.localhost`)"
@@ -12,5 +12,5 @@ services:
       - traefik.http.routers.whoami-https.entrypoints=secureweb
       - traefik.http.routers.whoami-https.rule=Host(`whoami.localhost`)
 networks:
-  frontend:
+  traefik-proxy:
     external:true

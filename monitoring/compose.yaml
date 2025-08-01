@@ -15,7 +15,7 @@ services:
       - .env
     networks:
       # Connexion au réseau partagé avec Traefik
-      - traefik-frontend
+      - traefik-proxy
     labels:
       # Active Traefik pour ce conteneur
       - "traefik.enable=true"
@@ -43,7 +43,7 @@ networks:
   # Spécifie le réseau utilisé par votre instance Traefik.
   # "external: true" indique à Docker de ne pas créer ce réseau,
   # mais de s'y connecter car il est géré ailleurs.
-  traefik-frontend:
+  traefik-proxy:
     external: true
 
 

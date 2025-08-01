@@ -7,13 +7,13 @@ services:
       # Mount the git repository into the Nginx container
       - ./site-data:/usr/share/nginx/html:ro # :ro makes it read-only for security
     networks:
-      - traefik_proxy
+      - traefik-proxy
     labels:
       # --- Traefik Labels ---
       - "traefik.enable=true"
       - "traefik.http.routers.my-site.rule=Host(`your-domain.com`)"
       - "traefik.http.routers.my-site.entrypoints=websecure"
-      - "traefik.http.routers.my-site.tls.certresolver=myresolver" # Use your Traefik cert resolver name
+      - "traefik.http.routers.my-site.tls.certresolver=cloudflare" # Use your Traefik cert resolver name
       - "traefik.http.services.my-site.loadbalancer.server.port=80"
 
   # The webhook listener that triggers the update script
@@ -26,7 +26,7 @@ services:
       - ./scripts:/scripts
       - ./site-data:/site-data # Needs access to run git commands
     networks:
-      - traefik_proxy
+      - traefik-proxy
     command: -hooks /etc/webhook/hooks.json -verbose
     labels:
       # --- Traefik Labels ---
@@ -34,7 +34,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.my-site-webhook.rule=Host(`webhook.your-domain.com`)"
       - "traefik.http.routers.my-site-webhook.entrypoints=websecure"
-      - "traefik.http.routers.my-site-webhook.tls.certresolver=myresolver" # Use your Traefik cert resolver name
+      - "traefik.http.routers.my-site-webhook.tls.certresolver=cloudflare" # Use your Traefik cert resolver name
       - "traefik.http.services.my-site-webhook.loadbalancer.server.port=9000"
 
 networks:

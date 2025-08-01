@@ -3,7 +3,7 @@ services:
     restart: always
     networks:
       - zitadel
-      - traefik_public
+      - traefik-proxy
     image: ghcr.io/zitadel/zitadel:latest
     command: start-from-init --masterkey "${ZITADEL_MASTERKEY}" --tlsMode ${ZITADEL_TLS_MODE}
     environment:
@@ -26,7 +26,7 @@ services:
       - "traefik.http.routers.zitadel.entrypoints=websecure"
       - "traefik.http.routers.zitadel.tls=true"
       - "traefik.http.services.zitadel.loadbalancer.server.port=8080"
-      - "traefik.docker.network=traefik_public"
+      - "traefik.docker.network=traefik-proxy"
 
   db:
     restart: always
@@ -47,5 +47,5 @@ services:
 networks:
   zitadel:
     internal: true
-  traefik_public:
+  traefik-proxy:
     external: true
