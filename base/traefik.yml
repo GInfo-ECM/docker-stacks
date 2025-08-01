@@ -1,5 +1,5 @@
 api:
-  insecure: false  # Allows HTTP access to the API (use cautiously, better to secure it)
+  dashboard: true  # Allows HTTP access to the API (use cautiously, better to secure it)
 
 entryPoints:
   web:
