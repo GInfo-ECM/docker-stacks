@@ -44,8 +44,8 @@ docker compose up -d
 |-------|-------------|--------|
 | **minecraft** | Serveur Minecraft avec proxy Velocity | ✅ Stable |
 | **zitadel** | Gestion d'identité et d'accès (IAM) | ✅ Stable |
-| **keycloak** | Gestion d'identité | |
-| **authentik** | Gestion d'identité | |
+| **keycloak** | Gestion d'identité | ✅ Stable |
+| **authentik** | Gestion d'identité | ✅ Stable |
 ### 📝 Templates et modèles
 
 | Stack | Description | Status |
